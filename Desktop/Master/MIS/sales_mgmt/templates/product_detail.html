@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <div class="row g-0">
+        <div class="col-md-6">
+            <img src="{{ product.image_url }}" class="img-fluid rounded" alt="{{ product.name }}">
+        </div>
+        <div class="col-md-6">
+            <div class="card-body">
+                <h2 class="card-title">{{ product.name }}</h2>
+                <p class="card-text">{{ product.description }}</p>
+                <p class="card-text">Price: ${{ "%.2f"|format(product.price) }}</p>
+                <p class="card-text">Available Stock: {{ product.stock }}</p>
+        
+        {% if current_user.is_authenticated and product.stock > 0 %}
+        <form method="POST" action="{{ url_for('add_to_cart', product_id=product.id) }}" class="mb-3">
+            <input type="hidden" name="return_to" value="{{ request.path }}">
+            <div class="mb-3">
+                <label for="quantity" class="form-label">Quantity</label>
+                <div class="input-group">
+                    <input type="number" class="form-control" id="quantity" name="quantity" min="1" max="{{ product.stock }}" value="1" required>
+                    <button type="submit" class="btn btn-primary">Add to Cart</button>
+                </div>
+            </div>
+        </form>
+        <div class="d-grid gap-2">
+            <a href="{{ url_for('cart') }}" class="btn btn-outline-primary">
+                <i class="fas fa-shopping-cart"></i> View Cart
+            </a>
+            <a href="{{ url_for('home') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-shopping-bag"></i> Continue Shopping
+            </a>
+        </div>
+        {% elif not current_user.is_authenticated %}
+        <p class="text-warning">Please <a href="{{ url_for('login') }}">login</a> to purchase this item.</p>
+        {% else %}
+        <p class="text-danger">Out of stock</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

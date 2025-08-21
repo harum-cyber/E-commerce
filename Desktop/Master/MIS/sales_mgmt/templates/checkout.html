@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">Checkout</h2>
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Delivery Address</h5>
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="address" class="form-label">Full Address</label>
+                            <textarea class="form-control" id="address" name="address" rows="3" required
+                                    placeholder="Enter your complete delivery address"></textarea>
+                        </div>
+                        
+                        <h5 class="mt-4">Payment Method</h5>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="payment_method" id="card" value="card" required onchange="toggleCardFields()">
+                                <label class="form-check-label" for="card">
+                                    <i class="fas fa-credit-card"></i> Credit/Debit Card
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="payment_method" id="cash" value="cash" required onchange="toggleCardFields()">
+                                <label class="form-check-label" for="cash">
+                                    <i class="fas fa-money-bill"></i> Cash on Delivery
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Card Payment Fields -->
+                        <div id="cardFields" style="display: none;">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-12 mb-3">
+                                            <label for="cardNumber" class="form-label">Card Number</label>
+                                            <input type="text" class="form-control" id="cardNumber" name="card_number" 
+                                                   pattern="[0-9]{16}" placeholder="1234 5678 9012 3456" 
+                                                   data-card-field>
+                                            <small class="text-muted">16 digits number</small>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="expiryDate" class="form-label">Expiry Date</label>
+                                            <input type="text" class="form-control" id="expiryDate" name="expiry_date" 
+                                                   pattern="(0[1-9]|1[0-2])\/([0-9]{2})" placeholder="MM/YY" 
+                                                   data-card-field>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="cvv" class="form-label">CVV</label>
+                                            <input type="text" class="form-control" id="cvv" name="cvv" 
+                                                   pattern="[0-9]{3,4}" placeholder="123" 
+                                                   data-card-field>
+                                            <small class="text-muted">3 or 4 digits</small>
+                                        </div>
+                                        <div class="col-12">
+                                            <label for="cardName" class="form-label">Name on Card</label>
+                                            <input type="text" class="form-control" id="cardName" name="card_name" 
+                                                   placeholder="John Doe" data-card-field>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100" id="submitButton">Place Order</button>
+
+                        <script>
+                        function toggleCardFields() {
+                            const cardFields = document.getElementById('cardFields');
+                            const cardInputs = document.querySelectorAll('[data-card-field]');
+                            const isCardPayment = document.getElementById('card').checked;
+                            
+                            cardFields.style.display = isCardPayment ? 'block' : 'none';
+                            
+                            // Toggle required attribute on card fields
+                            cardInputs.forEach(input => {
+                                input.required = isCardPayment;
+                            });
+                        }
+
+                        // Format card number with spaces
+                        document.getElementById('cardNumber').addEventListener('input', function(e) {
+                            let value = e.target.value.replace(/\D/g, '').substring(0, 16);
+                            let formattedValue = value.replace(/(\d{4})(?=\d)/g, '$1 ');
+                            e.target.value = formattedValue;
+                        });
+
+                        // Format expiry date
+                        document.getElementById('expiryDate').addEventListener('input', function(e) {
+                            let value = e.target.value.replace(/\D/g, '').substring(0, 4);
+                            if (value.length > 2) {
+                                value = value.substring(0, 2) + '/' + value.substring(2);
+                            }
+                            e.target.value = value;
+                        });
+
+                        // Format CVV
+                        document.getElementById('cvv').addEventListener('input', function(e) {
+                            e.target.value = e.target.value.replace(/\D/g, '').substring(0, 4);
+                        });
+                        </script>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Order Summary</h5>
+                    <table class="table table-sm">
+                        <tbody>
+                            {% for item in cart_items %}
+                            <tr>
+                                <td>{{ item.product.name }} x {{ item.quantity }}</td>
+                                <td class="text-end">${{ "%.2f"|format(item.product.price * item.quantity) }}</td>
+                            </tr>
+                            {% endfor %}
+                            <tr>
+                                <th>Total:</th>
+                                <th class="text-end">${{ "%.2f"|format(total) }}</th>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
